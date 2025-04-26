@@ -1,10 +1,12 @@
 
 import streamlit as st
+from fpdf import FPDF
+import base64
 
 st.set_page_config(page_title="Propwealth Cashflow Calculator", layout="wide")
 st.title("🏠 Propwealth Cashflow Calculator")
 
-# Section 1: Property Purchase Details
+# Capture all user inputs
 with st.expander("1️⃣ Property Purchase Details", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -22,7 +24,6 @@ with st.expander("1️⃣ Property Purchase Details", expanded=True):
         total_capital = deposit + stamp_duty + lmi + legals + reno_cost
         st.success(f"💰 Total Capital Required: ${total_capital:,.2f}")
 
-# Section 2: Rental Yield & Income
 with st.expander("2️⃣ Rental Yield & Income", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
@@ -34,7 +35,6 @@ with st.expander("2️⃣ Rental Yield & Income", expanded=True):
         high_yield = (high_rent * 52 / purchase_price) * 100
         st.metric("Yield (High Rent)", f"{high_yield:.2f}%")
 
-# Section 3: Expense Breakdown
 with st.expander("3️⃣ Expense Breakdown", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -48,11 +48,10 @@ with st.expander("3️⃣ Expense Breakdown", expanded=True):
     with col3:
         loan_repayment_weekly = ((loan_amount * (loan_interest_rate / 100)) / 12) / 4.33
         st.number_input("Loan Repayments ($/week)", value=loan_repayment_weekly, step=1.0, format="%.2f", disabled=True)
-    
+
     total_expenses = council + insurance + mgmt_fees + landlord_insurance + loan_repayment_weekly
     st.warning(f"💸 Total Weekly Expenses: ${total_expenses:.2f}")
 
-# Section 4: Estimated Cashflow
 with st.expander("4️⃣ Estimated Cashflow", expanded=True):
     cashflow_low = low_rent - total_expenses
     cashflow_high = high_rent - total_expenses
@@ -62,18 +61,54 @@ with st.expander("4️⃣ Estimated Cashflow", expanded=True):
     with col2:
         st.metric("Weekly Cashflow (High Rent)", f"${cashflow_high:.2f}")
 
-# Section 5: Property Specifications
 with st.expander("5️⃣ Property Specifications", expanded=False):
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.text_input("Vacant / Leased", "Vacant")
-        st.number_input("Bedrooms", value=3)
-        st.number_input("Bathrooms", value=1)
+        vacant_leased = st.text_input("Vacant / Leased", "Vacant")
+        bedrooms = st.number_input("Bedrooms", value=3)
+        bathrooms = st.number_input("Bathrooms", value=1)
     with col2:
-        st.number_input("Lock-up Garage / Carport", value=2)
-        st.text_input("Size of Property", "588 sqm")
-        st.number_input("Age of Property (Years)", value=50)
+        garages = st.number_input("Lock-up Garage / Carport", value=2)
+        size = st.text_input("Size of Property", "588 sqm")
+        age = st.number_input("Age of Property (Years)", value=50)
     with col3:
-        st.text_input("Construction Type", "Brick Veneer")
-        st.text_input("# of Units in Block", "2")
-        st.text_area("Work Needed", "")
+        construction_type = st.text_input("Construction Type", "Brick Veneer")
+        units_in_block = st.text_input("# of Units in Block", "2")
+        work_needed = st.text_area("Work Needed", "")
+
+# Button to generate PDF
+st.header("📄 Download Report")
+if st.button("Generate PDF Report"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    pdf.cell(200, 10, txt="Propwealth Cashflow Report", ln=True, align='C')
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Address: {address}", ln=True)
+    pdf.cell(200, 10, txt=f"Purchase Price: ${purchase_price:,.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Loan Amount: ${loan_amount:,.2f} @ {loan_interest_rate:.2f}%", ln=True)
+    pdf.cell(200, 10, txt=f"Deposit: ${deposit:,.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Stamp Duty: ${stamp_duty:,.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Renovation Cost: ${reno_cost:,.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Total Capital: ${total_capital:,.2f}", ln=True)
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Low Rent: ${low_rent}/week - Yield: {low_yield:.2f}%", ln=True)
+    pdf.cell(200, 10, txt=f"High Rent: ${high_rent}/week - Yield: {high_yield:.2f}%", ln=True)
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Total Weekly Expenses: ${total_expenses:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Weekly Cashflow (Low): ${cashflow_low:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Weekly Cashflow (High): ${cashflow_high:.2f}", ln=True)
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Vacant/Leased: {vacant_leased}", ln=True)
+    pdf.cell(200, 10, txt=f"Bedrooms: {bedrooms}, Bathrooms: {bathrooms}, Garage: {garages}", ln=True)
+    pdf.cell(200, 10, txt=f"Construction: {construction_type}, Age: {age} years", ln=True)
+    pdf.cell(200, 10, txt=f"Size: {size}, Units: {units_in_block}", ln=True)
+    if work_needed.strip():
+        pdf.ln(5)
+        pdf.multi_cell(0, 10, txt=f"Work Needed: {work_needed}")
+
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    b64 = base64.b64encode(pdf_output).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="Propwealth_Cashflow_Report.pdf">📥 Download your PDF</a>'
+    st.markdown(href, unsafe_allow_html=True)

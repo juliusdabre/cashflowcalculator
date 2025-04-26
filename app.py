@@ -2,7 +2,7 @@
 import streamlit as st
 
 st.set_page_config(page_title="Propwealth Cashflow Calculator", layout="wide")
-st.title("🏠 Propwealth Cashflow Calculator")
+st.title(" Cashflow Calculator")
 
 # Section 1: Property Purchase Details
 with st.expander("1️⃣ Property Purchase Details", expanded=True):

@@ -1,11 +1,10 @@
-# Update the Streamlit app to be more interactive and use expandable sections on a single page
 
-interactive_app_code = '''
 import streamlit as st
 
 st.set_page_config(page_title="Propwealth Cashflow Calculator", layout="wide")
 st.title("🏠 Propwealth Cashflow Calculator")
 
+# Section 1: Property Purchase Details
 with st.expander("1️⃣ Property Purchase Details", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -22,6 +21,7 @@ with st.expander("1️⃣ Property Purchase Details", expanded=True):
         total_capital = deposit + stamp_duty + lmi + legals + reno_cost
         st.success(f"💰 Total Capital Required: ${total_capital:,.2f}")
 
+# Section 2: Rental Yield & Income
 with st.expander("2️⃣ Rental Yield & Income", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
@@ -33,6 +33,7 @@ with st.expander("2️⃣ Rental Yield & Income", expanded=True):
         high_yield = (high_rent * 52 / purchase_price) * 100
         st.metric("Yield (High Rent)", f"{high_yield:.2f}%")
 
+# Section 3: Expense Breakdown
 with st.expander("3️⃣ Expense Breakdown", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -46,6 +47,7 @@ with st.expander("3️⃣ Expense Breakdown", expanded=True):
         total_expenses = council + insurance + mgmt_fees + repayments + landlord_insurance
         st.warning(f"💸 Total Weekly Expenses: ${total_expenses:.2f}")
 
+# Section 4: Estimated Cashflow
 with st.expander("4️⃣ Estimated Cashflow", expanded=True):
     cashflow_low = low_rent - total_expenses
     cashflow_high = high_rent - total_expenses
@@ -55,6 +57,7 @@ with st.expander("4️⃣ Estimated Cashflow", expanded=True):
     with col2:
         st.metric("Weekly Cashflow (High Rent)", f"${cashflow_high:.2f}")
 
+# Section 5: Property Specifications
 with st.expander("5️⃣ Property Specifications", expanded=False):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -69,15 +72,3 @@ with st.expander("5️⃣ Property Specifications", expanded=False):
         st.text_input("Construction Type", "Brick Veneer")
         st.text_input("# of Units in Block", "2")
         st.text_area("Work Needed", "")
-'''
-
-# Overwrite the previous app.py with interactive version
-with open(app_path, "w") as f:
-    f.write(interactive_app_code)
-
-# Recreate ZIP for deployment
-with zipfile.ZipFile(zip_deploy_path, 'w') as zipf:
-    zipf.write(app_path, arcname="app.py")
-    zipf.write(req_path, arcname="requirements.txt")
-
-zip_deploy_path

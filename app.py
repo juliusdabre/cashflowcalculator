@@ -3,7 +3,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Propwealth Cashflow Calculator", layout="wide")
 
-st.title("🏠 Propwealth Cashflow Calculator")
+st.title(" Cashflow Calculator")
 
 st.header("1. Property Purchase Details")
 address = st.text_input("Address", "1 Murtoa St Dallas")
